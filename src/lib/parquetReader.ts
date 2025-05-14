@@ -1,5 +1,7 @@
 
-import { Arrow } from '@apache-arrow/ts';
+// Import the correct modules from Apache Arrow
+import { tableFromIPC } from '@apache-arrow/ts';
+import { Table } from '@apache-arrow/ts';
 
 // Define types for our parquet data
 export interface ParquetColumn {
@@ -22,7 +24,7 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
     const buffer = await file.arrayBuffer();
     
     // Use Arrow to parse the parquet file
-    const table = await Arrow.Table.from([new Uint8Array(buffer)]);
+    const table = await tableFromIPC(new Uint8Array(buffer));
     
     // Extract column information
     const columns: ParquetColumn[] = table.schema.fields.map(field => ({
