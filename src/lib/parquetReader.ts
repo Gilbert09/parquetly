@@ -1,12 +1,14 @@
+import * as arrow from "@apache-arrow/ts";
+// import wasmInit, { readParquet } from "parquet-wasm";
 
-// Import the correct modules from Apache Arrow
-import { tableFromIPC } from '@apache-arrow/ts';
-import { Table } from '@apache-arrow/ts';
+const parquet = await import(
+  "https://cdn.jsdelivr.net/npm/parquet-wasm@0.6.0/esm/+esm"
+);
+await parquet.default();
 
-// Define types for our parquet data
 export interface ParquetColumn {
   name: string;
-  type: string;
+  type: { typeId: number };
   nullable: boolean;
 }
 
@@ -18,29 +20,36 @@ export interface ParquetFileData {
   fileSize: string;
 }
 
+// Utility to format bytes as human-readable string
+function formatBytes(bytes: number): string {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Byte";
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + " " + sizes[i];
+}
+
 export async function readParquetFile(file: File): Promise<ParquetFileData> {
   try {
-    // Read the file as an ArrayBuffer
+    // await wasmInit();
     const buffer = await file.arrayBuffer();
-    
-    // Use Arrow to parse the parquet file
-    const table = await tableFromIPC(new Uint8Array(buffer));
-    
-    // Extract column information
-    const columns: ParquetColumn[] = table.schema.fields.map(field => ({
+    const reader = parquet.readParquet(new Uint8Array(buffer));
+    const table = arrow.tableFromIPC(reader.intoIPCStream());
+
+    const schema = table.schema;
+    const columns: ParquetColumn[] = schema.fields.map((field) => ({
       name: field.name,
-      type: field.type.toString(),
-      nullable: field.nullable
+      type: field.type ?? "UNKNOWN",
+      nullable: field.nullable,
     }));
-    
+
     // Extract data rows (up to 1000 for performance)
     const maxRows = Math.min(table.numRows, 1000);
     const data: Record<string, any>[] = [];
-    
+
     for (let i = 0; i < maxRows; i++) {
       const row: Record<string, any> = {};
       columns.forEach((column) => {
-        const col = table.getColumn(column.name);
+        const col = table.getChild(column.name);
         if (col) {
           const value = col.get(i);
           row[column.name] = value !== null ? value : null;
@@ -48,32 +57,21 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
       });
       data.push(row);
     }
-    
+
     // Calculate file size in human-readable format
     const fileSize = formatBytes(file.size);
-    
+
     return {
       columns,
       data,
       totalRows: table.numRows,
       fileName: file.name,
-      fileSize
+      fileSize: formatBytes(file.size),
     };
   } catch (error) {
     console.error("Failed to read parquet file:", error);
-    throw new Error("Failed to read parquet file. Please make sure it's a valid parquet file.");
+    throw new Error(
+      "Failed to read parquet file. Please make sure it's a valid parquet file."
+    );
   }
-}
-
-// Helper to format file size
-function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }

@@ -1,46 +1,55 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import FileDropzone from './FileDropzone';
-import DataTable from './DataTable';
-import SchemaSummary from './SchemaSummary';
-import { readParquetFile, type ParquetFileData } from '@/lib/parquetReader';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import FileDropzone from "./FileDropzone";
+import DataTable from "./DataTable";
+import SchemaSummary from "./SchemaSummary";
+import { readParquetFile, type ParquetFileData } from "@/lib/parquetReader";
+import { useToast } from "@/hooks/use-toast";
+import { getParquetTypeName } from "@/lib/utils";
 
 export default function ParquetViewer() {
   const [isLoading, setIsLoading] = useState(false);
   const [fileData, setFileData] = useState<ParquetFileData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  
+
   const handleFileSelect = async (file: File) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await readParquetFile(file);
       setFileData(data);
       toast({
         title: "File loaded successfully",
-        description: `Loaded ${file.name} with ${data.totalRows.toLocaleString()} rows and ${data.columns.length} columns.`,
+        description: `Loaded ${
+          file.name
+        } with ${data.totalRows.toLocaleString()} rows and ${
+          data.columns.length
+        } columns.`,
       });
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Unknown error loading file");
+      setError(
+        err instanceof Error ? err.message : "Unknown error loading file"
+      );
       toast({
         variant: "destructive",
         title: "Error loading file",
-        description: err instanceof Error ? err.message : "Failed to read the parquet file",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to read the parquet file",
       });
       setFileData(null);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="container py-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-6 flex items-center">
@@ -48,12 +57,15 @@ export default function ParquetViewer() {
           Parquet Viewer
         </span>
       </h1>
-      
+
       {!fileData && (
         <Card>
           <CardContent className="pt-6">
-            <FileDropzone onFileSelect={handleFileSelect} isProcessing={isLoading} />
-            
+            <FileDropzone
+              onFileSelect={handleFileSelect}
+              isProcessing={isLoading}
+            />
+
             {error && (
               <Alert variant="destructive" className="mt-4">
                 <AlertCircle className="h-4 w-4" />
@@ -64,7 +76,7 @@ export default function ParquetViewer() {
           </CardContent>
         </Card>
       )}
-      
+
       {fileData && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -76,21 +88,21 @@ export default function ParquetViewer() {
               Load different file
             </button>
           </div>
-          
-          <SchemaSummary 
+
+          <SchemaSummary
             columns={fileData.columns}
             fileName={fileData.fileName}
             fileSize={fileData.fileSize}
             totalRows={fileData.totalRows}
           />
-          
+
           <Tabs defaultValue="data">
             <TabsList>
               <TabsTrigger value="data">Data</TabsTrigger>
               <TabsTrigger value="schema">Schema</TabsTrigger>
             </TabsList>
             <TabsContent value="data" className="mt-4">
-              <DataTable 
+              <DataTable
                 data={fileData.data}
                 columns={fileData.columns}
                 totalRows={fileData.totalRows}
@@ -109,8 +121,12 @@ export default function ParquetViewer() {
                   <tbody>
                     {fileData.columns.map((column, index) => (
                       <tr key={index} className="border-b hover:bg-muted/50">
-                        <td className="px-4 py-2 font-mono text-sm">{column.name}</td>
-                        <td className="px-4 py-2 font-mono text-sm">{column.type}</td>
+                        <td className="px-4 py-2 font-mono text-sm">
+                          {column.name}
+                        </td>
+                        <td className="px-4 py-2 font-mono text-sm">
+                          {getParquetTypeName(column.type.typeId)}
+                        </td>
                         <td className="px-4 py-2">
                           {column.nullable ? (
                             <span className="text-data-orange">Yes</span>

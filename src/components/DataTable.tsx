@@ -1,9 +1,21 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { type ParquetColumn } from '@/lib/parquetReader';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { type ParquetColumn } from "@/lib/parquetReader";
+import { getParquetTypeName } from "@/lib/utils";
 
 interface DataTableProps {
   data: Record<string, any>[];
@@ -11,41 +23,57 @@ interface DataTableProps {
   totalRows: number;
 }
 
-export default function DataTable({ data, columns, totalRows }: DataTableProps) {
+export default function DataTable({
+  data,
+  columns,
+  totalRows,
+}: DataTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 20;
   const totalPages = Math.ceil(data.length / rowsPerPage);
-  
+
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, data.length);
   const currentData = data.slice(startIndex, endIndex);
-  
+
   // Format values for display
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) {
-      return 'null';
+      return "null";
     }
-    if (typeof value === 'object') {
-      return JSON.stringify(value);
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value);
+      } catch (e) {
+        if ("toString" in value) {
+          return value.toString();
+        }
+      }
     }
     return String(value);
   };
-  
+
   // Get column type color
   const getTypeColor = (type: string): string => {
-    if (type.includes('int') || type.includes('decimal') || type.includes('float') || type.includes('double')) {
-      return 'text-data-blue';
-    } else if (type.includes('bool')) {
-      return 'text-data-green';
-    } else if (type.includes('date') || type.includes('time')) {
-      return 'text-data-purple';
-    } else if (type.includes('string') || type.includes('char')) {
-      return 'text-data-orange';
+    const lowerType = type.toLowerCase();
+    if (
+      lowerType.includes("int") ||
+      lowerType.includes("decimal") ||
+      lowerType.includes("float") ||
+      lowerType.includes("double")
+    ) {
+      return "text-data-blue";
+    } else if (lowerType.includes("bool")) {
+      return "text-data-green";
+    } else if (lowerType.includes("date") || lowerType.includes("time")) {
+      return "text-data-purple";
+    } else if (lowerType.includes("string") || lowerType.includes("char")) {
+      return "text-data-orange";
     } else {
-      return 'text-muted-foreground';
+      return "text-muted-foreground";
     }
   };
-  
+
   return (
     <div className="rounded-md border">
       <div className="relative overflow-x-auto">
@@ -56,8 +84,12 @@ export default function DataTable({ data, columns, totalRows }: DataTableProps) 
                 <TableHead key={column.name} className="whitespace-nowrap">
                   <div className="font-medium">
                     {column.name}
-                    <span className={`ml-1 text-xs ${getTypeColor(column.type)}`}>
-                      ({column.type})
+                    <span
+                      className={`ml-1 text-xs ${getTypeColor(
+                        getParquetTypeName(column.type.typeId)
+                      )}`}
+                    >
+                      ({getParquetTypeName(column.type.typeId)})
                     </span>
                   </div>
                 </TableHead>
@@ -69,7 +101,10 @@ export default function DataTable({ data, columns, totalRows }: DataTableProps) 
               currentData.map((row, rowIndex) => (
                 <TableRow key={rowIndex}>
                   {columns.map((column) => (
-                    <TableCell key={`${rowIndex}-${column.name}`} className="truncate max-w-[200px]">
+                    <TableCell
+                      key={`${rowIndex}-${column.name}`}
+                      className="truncate max-w-[200px]"
+                    >
                       {formatValue(row[column.name])}
                     </TableCell>
                   ))}
@@ -77,7 +112,10 @@ export default function DataTable({ data, columns, totalRows }: DataTableProps) 
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No data available
                 </TableCell>
               </TableRow>
@@ -85,11 +123,11 @@ export default function DataTable({ data, columns, totalRows }: DataTableProps) 
           </TableBody>
         </Table>
       </div>
-      
+
       {data.length > 0 && (
         <div className="flex items-center justify-between px-4 py-2 border-t">
           <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1}-{endIndex} of {data.length} rows 
+            Showing {startIndex + 1}-{endIndex} of {data.length} rows
             {totalRows > data.length && ` (${totalRows} total in file)`}
           </div>
           <div className="flex items-center space-x-2">
