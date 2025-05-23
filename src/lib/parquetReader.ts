@@ -1,10 +1,14 @@
 import * as arrow from "@apache-arrow/ts";
 // import wasmInit, { readParquet } from "parquet-wasm";
 
-const parquet = await import(
-  "https://cdn.jsdelivr.net/npm/parquet-wasm@0.6.0/esm/+esm"
-);
-await parquet.default();
+let parquet;
+
+export async function initParquet() {
+  parquet = await import(
+    "https://cdn.jsdelivr.net/npm/parquet-wasm@0.6.0/esm/+esm"
+  );
+  await parquet.default();
+}
 
 export interface ParquetColumn {
   name: string;
