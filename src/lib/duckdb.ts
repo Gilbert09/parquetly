@@ -82,17 +82,96 @@ export async function executeQuery(sql: string): Promise<any> {
   return result;
 }
 
+export interface ColumnInfo {
+  name: string;
+  type: string;
+}
+
 export interface QueryResult {
-  columns: string[];
+  columns: ColumnInfo[];
   rows: Record<string, any>[];
   rowCount: number;
+}
+
+// Helper to get a readable type name from Arrow type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getArrowTypeName(field: any): string {
+  const type = field.type;
+
+  // Arrow type IDs (from apache-arrow library)
+  const typeIdMap: Record<number, string> = {
+    0: 'NONE',
+    1: 'Null',
+    2: 'Int',
+    3: 'Float',
+    4: 'Binary',
+    5: 'Utf8',
+    6: 'Bool',
+    7: 'Decimal',
+    8: 'Date',
+    9: 'Time',
+    10: 'Timestamp',
+    11: 'Interval',
+    12: 'List',
+    13: 'Struct',
+    14: 'Union',
+    15: 'FixedSizeBinary',
+    16: 'FixedSizeList',
+    17: 'Map',
+    18: 'Duration',
+    19: 'LargeBinary',
+    20: 'LargeUtf8',
+    21: 'LargeList',
+    22: 'RunEndEncoded',
+  };
+
+  if (type && type.typeId !== undefined) {
+    const baseName = typeIdMap[type.typeId] || 'Unknown';
+
+    // For Int types, add bit width (Int8, Int16, Int32, Int64, UInt8, etc.)
+    if (baseName === 'Int' && type.bitWidth !== undefined) {
+      return type.isSigned !== false ? `Int${type.bitWidth}` : `UInt${type.bitWidth}`;
+    }
+
+    // For Float types, check precision
+    if (baseName === 'Float' && type.precision !== undefined) {
+      // precision 0 = HALF (16-bit), 1 = SINGLE (32-bit), 2 = DOUBLE (64-bit)
+      const precisionMap: Record<number, string> = { 0: 'Float16', 1: 'Float32', 2: 'Float64' };
+      return precisionMap[type.precision] || 'Float';
+    }
+
+    // For Timestamp types, we can add unit info if needed
+    if (baseName === 'Timestamp' && type.unit !== undefined) {
+      // unit: 0 = second, 1 = millisecond, 2 = microsecond, 3 = nanosecond
+      const unitMap: Record<number, string> = {
+        0: 'Timestamp(s)',
+        1: 'Timestamp(ms)',
+        2: 'Timestamp(us)',
+        3: 'Timestamp(ns)'
+      };
+      return unitMap[type.unit] || 'Timestamp';
+    }
+
+    // Display "String" instead of "Utf8" for better readability
+    if (baseName === 'Utf8' || baseName === 'LargeUtf8') {
+      return 'String';
+    }
+
+    return baseName;
+  }
+
+  return 'Unknown';
 }
 
 export async function executeQueryAsJSON(sql: string): Promise<QueryResult> {
   const arrowResult = await executeQuery(sql);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = arrowResult.schema.fields.map((field: any) => field.name);
+  const columns: ColumnInfo[] = arrowResult.schema.fields.map((field: any) => ({
+    name: field.name,
+    type: getArrowTypeName(field),
+  }));
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = arrowResult.toArray().map((row: any) => row.toJSON());
 

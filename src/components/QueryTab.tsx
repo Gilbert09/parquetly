@@ -13,6 +13,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Play, Info, WrapText } from "lucide-react";
 import { executeQueryAsJSON, type QueryResult } from "@/lib/duckdb";
 
+// Extend TanStack Table's ColumnMeta type
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends unknown, TValue> {
+    type?: string;
+  }
+}
+
 export default function QueryTab() {
   const [query, setQuery] = useState("SELECT * FROM data LIMIT 100");
   const [isExecuting, setIsExecuting] = useState(false);
@@ -20,6 +27,27 @@ export default function QueryTab() {
   const [error, setError] = useState<string | null>(null);
   const [columnResizeMode] = useState<ColumnResizeMode>("onChange");
   const [wrapText, setWrapText] = useState(false);
+
+  // Get column type color (same as DataTable)
+  const getTypeColor = (type: string): string => {
+    const lowerType = type.toLowerCase();
+    if (
+      lowerType.includes("int") ||
+      lowerType.includes("decimal") ||
+      lowerType.includes("float") ||
+      lowerType.includes("double")
+    ) {
+      return "text-data-blue";
+    } else if (lowerType.includes("bool")) {
+      return "text-data-green";
+    } else if (lowerType.includes("date") || lowerType.includes("time")) {
+      return "text-data-purple";
+    } else if (lowerType.includes("string") || lowerType.includes("utf") || lowerType.includes("char")) {
+      return "text-data-orange";
+    } else {
+      return "text-muted-foreground";
+    }
+  };
 
   const handleExecuteQuery = async () => {
     if (!query.trim()) {
@@ -54,9 +82,10 @@ export default function QueryTab() {
 
   // Helper function to estimate content width
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const estimateColumnWidth = (columnName: string, rows: Record<string, any>[]) => {
-    // Start with header width (rough estimate: 8px per character + padding)
-    let maxWidth = columnName.length * 8 + 32;
+  const estimateColumnWidth = (columnName: string, columnType: string, rows: Record<string, any>[]) => {
+    // Start with header width including type (rough estimate: 8px per character + padding)
+    // Add space for type annotation like "(Int32)"
+    let maxWidth = (columnName.length + columnType.length + 3) * 8 + 32;
 
     // Check first 100 rows to estimate content width
     const sampleSize = Math.min(rows.length, 100);
@@ -85,9 +114,12 @@ export default function QueryTab() {
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => {
     if (!result || !result.columns.length) return [];
 
-    return result.columns.map((columnName) => ({
-      accessorKey: columnName,
-      header: columnName,
+    return result.columns.map((columnInfo) => ({
+      accessorKey: columnInfo.name,
+      header: columnInfo.name,
+      meta: {
+        type: columnInfo.type,
+      },
       cell: (info) => {
         const value = info.getValue();
         if (value === null || value === undefined) {
@@ -114,7 +146,7 @@ export default function QueryTab() {
           </span>
         );
       },
-      size: estimateColumnWidth(columnName, result.rows),
+      size: estimateColumnWidth(columnInfo.name, columnInfo.type, result.rows),
       minSize: 80,
       maxSize: 800,
     }));
@@ -230,12 +262,23 @@ export default function QueryTab() {
                           }}
                         >
                           <div className="truncate">
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
+                            {header.isPlaceholder ? null : (
+                              <div className="font-medium">
+                                {flexRender(
                                   header.column.columnDef.header,
                                   header.getContext()
                                 )}
+                                {header.column.columnDef.meta?.type && (
+                                  <span
+                                    className={`ml-1 text-xs ${getTypeColor(
+                                      header.column.columnDef.meta.type
+                                    )}`}
+                                  >
+                                    ({header.column.columnDef.meta.type})
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div
                             onMouseDown={header.getResizeHandler()}
