@@ -112,7 +112,7 @@ export default function SchemaSummary({
         </CardHeader>
         <CardContent className="max-h-[120px] overflow-y-auto">
           <ul className="space-y-1">
-            {columns.slice(0, 20).map((column) => (
+            {columns.map((column) => (
               <li
                 key={column.name}
                 className="text-sm flex items-center justify-between"
@@ -129,11 +129,6 @@ export default function SchemaSummary({
               </li>
             ))}
           </ul>
-          {columns.length > 20 && (
-            <div className="text-xs text-muted-foreground mt-1">
-              +{columns.length - 20} more columns
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
