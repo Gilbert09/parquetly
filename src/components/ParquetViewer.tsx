@@ -7,7 +7,9 @@ import FileDropzone from "./FileDropzone";
 import DataTable from "./DataTable";
 import SchemaSummary from "./SchemaSummary";
 import RowGroupsTable from "./RowGroupsTable";
+import QueryTab from "./QueryTab";
 import { readParquetFile, type ParquetFileData } from "@/lib/parquetReader";
+import { loadArrowTable } from "@/lib/duckdb";
 import { useToast } from "@/hooks/use-toast";
 import { getParquetTypeName } from "@/lib/utils";
 
@@ -23,6 +25,10 @@ export default function ParquetViewer() {
 
     try {
       const data = await readParquetFile(file);
+
+      // Load the Arrow table into DuckDB
+      await loadArrowTable(data.arrowTable);
+
       setFileData(data);
       toast({
         title: "File loaded successfully",
@@ -102,6 +108,7 @@ export default function ParquetViewer() {
               <TabsTrigger value="data">Data</TabsTrigger>
               <TabsTrigger value="schema">Schema</TabsTrigger>
               <TabsTrigger value="rowgroups">Row Groups</TabsTrigger>
+              <TabsTrigger value="query">Query</TabsTrigger>
             </TabsList>
             <TabsContent value="data" className="mt-4">
               <DataTable
@@ -144,6 +151,9 @@ export default function ParquetViewer() {
             </TabsContent>
             <TabsContent value="rowgroups" className="mt-4">
               <RowGroupsTable rowGroups={fileData.rowGroups} />
+            </TabsContent>
+            <TabsContent value="query" className="mt-4">
+              <QueryTab />
             </TabsContent>
           </Tabs>
         </div>

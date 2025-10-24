@@ -1,4 +1,4 @@
-import * as arrow from "@apache-arrow/ts";
+import * as arrow from "apache-arrow";
 // import wasmInit, { readParquet } from "parquet-wasm";
 
 let parquet;
@@ -41,6 +41,7 @@ export interface ParquetFileData {
   fileName: string;
   fileSize: string;
   rowGroups: RowGroupInfo[];
+  arrowTable: arrow.Table;
 }
 
 // Utility to format bytes as human-readable string
@@ -130,6 +131,7 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
       fileName: file.name,
       fileSize: formatBytes(file.size),
       rowGroups,
+      arrowTable: table,
     };
   } catch (error) {
     console.error("Failed to read parquet file:", error);
