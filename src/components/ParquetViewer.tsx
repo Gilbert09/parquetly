@@ -6,6 +6,7 @@ import { AlertCircle } from "lucide-react";
 import FileDropzone from "./FileDropzone";
 import DataTable from "./DataTable";
 import SchemaSummary from "./SchemaSummary";
+import RowGroupsTable from "./RowGroupsTable";
 import { readParquetFile, type ParquetFileData } from "@/lib/parquetReader";
 import { useToast } from "@/hooks/use-toast";
 import { getParquetTypeName } from "@/lib/utils";
@@ -100,6 +101,7 @@ export default function ParquetViewer() {
             <TabsList>
               <TabsTrigger value="data">Data</TabsTrigger>
               <TabsTrigger value="schema">Schema</TabsTrigger>
+              <TabsTrigger value="rowgroups">Row Groups</TabsTrigger>
             </TabsList>
             <TabsContent value="data" className="mt-4">
               <DataTable
@@ -139,6 +141,9 @@ export default function ParquetViewer() {
                   </tbody>
                 </table>
               </div>
+            </TabsContent>
+            <TabsContent value="rowgroups" className="mt-4">
+              <RowGroupsTable rowGroups={fileData.rowGroups} />
             </TabsContent>
           </Tabs>
         </div>

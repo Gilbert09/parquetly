@@ -5,7 +5,7 @@ let parquet;
 
 export async function initParquet() {
   parquet = await import(
-    "https://cdn.jsdelivr.net/npm/parquet-wasm@0.6.0/esm/+esm"
+    "https://cdn.jsdelivr.net/npm/parquet-wasm@0.7.1/esm/+esm"
   );
   await parquet.default();
 }
@@ -16,12 +16,31 @@ export interface ParquetColumn {
   nullable: boolean;
 }
 
+export interface ColumnChunkStats {
+  columnPath: string;
+  compression: string;
+  encodings: string[];
+  numValues: number;
+  compressedSize: number;
+  uncompressedSize: number;
+}
+
+export interface RowGroupInfo {
+  rowGroupIndex: number;
+  numRows: number;
+  numColumns: number;
+  totalByteSize: number;
+  compressedSize: number;
+  columns: ColumnChunkStats[];
+}
+
 export interface ParquetFileData {
   columns: ParquetColumn[];
   data: Record<string, any>[];
   totalRows: number;
   fileName: string;
   fileSize: string;
+  rowGroups: RowGroupInfo[];
 }
 
 // Utility to format bytes as human-readable string
@@ -36,7 +55,46 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
   try {
     // await wasmInit();
     const buffer = await file.arrayBuffer();
-    const reader = parquet.readParquet(new Uint8Array(buffer));
+    const uint8Array = new Uint8Array(buffer);
+
+    // Create ParquetFile to access metadata
+    const parquetFile = await parquet.ParquetFile.fromFile(file);
+    const metadata = parquetFile.metadata();
+
+    // Extract row group information
+    const rowGroups: RowGroupInfo[] = [];
+    const numRowGroups = metadata.numRowGroups();
+
+    for (let i = 0; i < numRowGroups; i++) {
+      const rowGroup = metadata.rowGroup(i);
+      const numColumns = rowGroup.numColumns();
+
+      // Extract column chunk metadata
+      const columns: ColumnChunkStats[] = [];
+      for (let j = 0; j < numColumns; j++) {
+        const columnChunk = rowGroup.column(j);
+        columns.push({
+          columnPath: columnChunk.columnPath(),
+          compression: columnChunk.compression(),
+          encodings: columnChunk.encodings(),
+          numValues: columnChunk.numValues(),
+          compressedSize: columnChunk.compressedSize(),
+          uncompressedSize: columnChunk.uncompressedSize(),
+        });
+      }
+
+      rowGroups.push({
+        rowGroupIndex: i,
+        numRows: rowGroup.numRows(),
+        numColumns: numColumns,
+        totalByteSize: rowGroup.totalByteSize(),
+        compressedSize: rowGroup.compressedSize(),
+        columns: columns,
+      });
+    }
+
+    // Read the actual data using the existing approach
+    const reader = parquet.readParquet(uint8Array);
     const table = arrow.tableFromIPC(reader.intoIPCStream());
 
     const schema = table.schema;
@@ -71,6 +129,7 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
       totalRows: table.numRows,
       fileName: file.name,
       fileSize: formatBytes(file.size),
+      rowGroups,
     };
   } catch (error) {
     console.error("Failed to read parquet file:", error);

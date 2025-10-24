@@ -55,3 +55,36 @@ const ParquetTypeIDToString: Record<number, string> = {
 export function getParquetTypeName(typeId: number): string | undefined {
   return ParquetTypeIDToString[typeId];
 }
+
+// Parquet Compression enum values
+enum ParquetCompression {
+  UNCOMPRESSED = 0,
+  SNAPPY = 1,
+  GZIP = 2,
+  BROTLI = 3,
+  LZ4 = 4, // Deprecated as of Parquet 2.9.0
+  LZ4_RAW = 5,
+  ZSTD = 6,
+  LZO = 7,
+}
+
+// Mapping from compression enum to string name
+const CompressionToString: Record<number, string> = {
+  [ParquetCompression.UNCOMPRESSED]: "UNCOMPRESSED",
+  [ParquetCompression.SNAPPY]: "SNAPPY",
+  [ParquetCompression.GZIP]: "GZIP",
+  [ParquetCompression.BROTLI]: "BROTLI",
+  [ParquetCompression.LZ4]: "LZ4 (deprecated)",
+  [ParquetCompression.LZ4_RAW]: "LZ4_RAW",
+  [ParquetCompression.ZSTD]: "ZSTD",
+  [ParquetCompression.LZO]: "LZO",
+};
+
+export function getCompressionName(compression: number | string): string {
+  // If it's already a string, return it
+  if (typeof compression === "string") {
+    return compression;
+  }
+  // If it's a number, look it up in the mapping
+  return CompressionToString[compression] || `UNKNOWN (${compression})`;
+}
