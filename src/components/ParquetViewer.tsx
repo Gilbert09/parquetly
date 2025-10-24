@@ -54,7 +54,7 @@ export default function ParquetViewer() {
     <div className="container py-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-6 flex items-center">
         <span className="bg-gradient-to-r from-primary to-data-purple bg-clip-text text-transparent">
-          Parquet Viewer
+          Parquetly
         </span>
       </h1>
 
