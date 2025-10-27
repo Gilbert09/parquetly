@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
+# Parquetly
 
-## Project info
+A fast, privacy-focused Parquet file viewer that runs entirely in your browser. Explore schemas, query data with SQL, and navigate large datasets without uploading files to any server.
 
-**URL**: https://lovable.dev/projects/1e2c963f-6552-4ce1-a31d-8588353400de
+## ✨ Features
 
-## How can I edit this code?
+- **🔒 100% Private**: All data processing happens in your browser. Your files never leave your computer.
+- **🔍 Schema Inspection**: View column names, types, and nullability at a glance
+- **📊 Data Preview**: Browse through your data with pagination
+- **🗂️ Row Group Analysis**: Inspect Parquet row group metadata and statistics
+- **💾 SQL Querying**: Run SQL queries against your data using DuckDB-WASM
+- **⚡ Fast & Lightweight**: Built with modern web technologies for optimal performance
+- **🎨 Clean UI**: Intuitive interface built with shadcn/ui components
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
+### Try It Online
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1e2c963f-6552-4ce1-a31d-8588353400de) and start prompting.
+Visit [parquetly.com](https://www.parquetly.com/) or click "Try with a sample file" to explore a Law Stack Exchange dataset.
 
-Changes made via Lovable will be committed automatically to this repo.
+### Run Locally
 
-**Use your preferred IDE**
+```bash
+# Clone the repository
+git clone https://github.com/Gilbert09/parquetly.git
+cd parquetly
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# Install dependencies
+npm install
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🛠️ Tech Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Frontend**: React + TypeScript + Vite
+- **UI Components**: shadcn/ui + Tailwind CSS
+- **Parquet Reading**: [parquet-wasm](https://github.com/kylebarron/parquet-wasm)
+- **SQL Engine**: [DuckDB-WASM](https://github.com/duckdb/duckdb-wasm)
+- **Analytics**: PostHog
 
-**Use GitHub Codespaces**
+## 📖 Usage
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **Upload a File**: Drag and drop a `.parquet` file or click to browse
+2. **Explore the Data**:
+   - **Data Tab**: Browse rows with pagination
+   - **Schema Tab**: View column definitions and types
+   - **Row Groups Tab**: Inspect Parquet file metadata
+   - **Query Tab**: Write SQL queries to analyze your data
 
-## What technologies are used for this project?
+### SQL Querying
 
-This project is built with:
+Your Parquet data is automatically loaded into a DuckDB table named `data`. You can query it using standard SQL:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```sql
+-- Get row count
+SELECT COUNT(*) FROM data;
 
-## How can I deploy this project?
+-- Filter and aggregate
+SELECT category, COUNT(*) as count, AVG(score) as avg_score
+FROM data
+WHERE score > 10
+GROUP BY category
+ORDER BY count DESC;
 
-Simply open [Lovable](https://lovable.dev/projects/1e2c963f-6552-4ce1-a31d-8588353400de) and click on Share -> Publish.
+-- DuckDB's powerful string functions
+SELECT
+  REGEXP_EXTRACT(email, '([^@]+)@', 1) as username,
+  STRING_SPLIT(tags, ',') as tag_array
+FROM data
+WHERE email LIKE '%@gmail.com';
 
-## Can I connect a custom domain to my Lovable project?
+-- Advanced analytics with window functions
+SELECT
+  date,
+  value,
+  AVG(value) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as moving_avg_7day,
+  PERCENT_RANK() OVER (ORDER BY value) as percentile
+FROM data;
 
-Yes, you can!
+-- JSON operations (if your parquet has JSON columns)
+SELECT
+  json_extract(metadata, '$.user.name') as user_name,
+  json_extract_string(settings, '$.theme') as theme
+FROM data;
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+-- Date/time manipulation
+SELECT
+  date_trunc('month', timestamp) as month,
+  COUNT(*) as events,
+  DATE_DIFF('day', MIN(timestamp), MAX(timestamp)) as day_span
+FROM data
+GROUP BY month;
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Press `Cmd/Ctrl + Enter` to execute queries.
+
+## 🔐 Privacy & Security
+
+Parquetly is designed with privacy in mind:
+
+- ✅ Zero server uploads - all processing is client-side
+- ✅ No data storage - files are only held in browser memory
+- ✅ No tracking of file contents
+- ✅ Open source - audit the code yourself
+
+## 📦 Building for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory, ready to deploy to any static hosting service.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
