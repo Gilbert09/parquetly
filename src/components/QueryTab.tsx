@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Play, Info, WrapText } from "lucide-react";
 import { executeQueryAsJSON, type QueryResult } from "@/lib/duckdb";
+import { usePostHog } from "posthog-js/react";
 
 // Extend TanStack Table's ColumnMeta type
 declare module "@tanstack/react-table" {
@@ -27,6 +28,7 @@ export default function QueryTab() {
   const [error, setError] = useState<string | null>(null);
   const [columnResizeMode] = useState<ColumnResizeMode>("onChange");
   const [wrapText, setWrapText] = useState(false);
+  const posthog = usePostHog();
 
   // Get column type color (same as DataTable)
   const getTypeColor = (type: string): string => {
@@ -59,14 +61,39 @@ export default function QueryTab() {
     setError(null);
     setResult(null);
 
+    const startTime = Date.now();
+
     try {
       const queryResult = await executeQueryAsJSON(query);
       setResult(queryResult);
+
+      const executionTime = Date.now() - startTime;
+
+      // Track successful query execution
+      posthog?.capture('query_executed', {
+        query_length: query.length,
+        query_type: query.trim().split(/\s+/)[0].toUpperCase(), // SELECT, UPDATE, etc.
+        row_count: queryResult.rowCount,
+        column_count: queryResult.columns.length,
+        execution_time_ms: executionTime,
+        success: true,
+      });
     } catch (err) {
       console.error("Query execution error:", err);
+      const executionTime = Date.now() - startTime;
+
       setError(
         err instanceof Error ? err.message : "Failed to execute query"
       );
+
+      // Track failed query execution
+      posthog?.capture('query_executed', {
+        query_length: query.length,
+        query_type: query.trim().split(/\s+/)[0].toUpperCase(),
+        execution_time_ms: executionTime,
+        success: false,
+        error_message: err instanceof Error ? err.message : "Unknown error",
+      });
     } finally {
       setIsExecuting(false);
     }

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { type ParquetColumn } from "@/lib/parquetReader";
 import { getParquetTypeName } from "@/lib/utils";
+import { usePostHog } from "posthog-js/react";
 
 interface DataTableProps {
   data: Record<string, any>[];
@@ -31,10 +32,23 @@ export default function DataTable({
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 20;
   const totalPages = Math.ceil(data.length / rowsPerPage);
+  const posthog = usePostHog();
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, data.length);
   const currentData = data.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number, action: 'first' | 'prev' | 'next' | 'last') => {
+    setCurrentPage(newPage);
+    posthog?.capture('data_table_paginated', {
+      action,
+      from_page: currentPage,
+      to_page: newPage,
+      total_pages: totalPages,
+      rows_per_page: rowsPerPage,
+      total_rows: totalRows,
+    });
+  };
 
   // Format values for display
   const formatValue = (value: any): string => {
@@ -134,7 +148,7 @@ export default function DataTable({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(1)}
+              onClick={() => handlePageChange(1, 'first')}
               disabled={currentPage === 1}
             >
               <ChevronsLeft className="h-4 w-4" />
@@ -142,7 +156,7 @@ export default function DataTable({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(currentPage - 1)}
+              onClick={() => handlePageChange(currentPage - 1, 'prev')}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -153,7 +167,7 @@ export default function DataTable({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(currentPage + 1)}
+              onClick={() => handlePageChange(currentPage + 1, 'next')}
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />
@@ -161,7 +175,7 @@ export default function DataTable({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setCurrentPage(totalPages)}
+              onClick={() => handlePageChange(totalPages, 'last')}
               disabled={currentPage === totalPages}
             >
               <ChevronsRight className="h-4 w-4" />
