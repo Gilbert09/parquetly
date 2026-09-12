@@ -181,3 +181,37 @@ export async function executeQueryAsJSON(sql: string): Promise<QueryResult> {
     rowCount: arrowResult.numRows,
   };
 }
+
+export type ExportFormat = "csv" | "json";
+
+const EXPORT_MIME: Record<ExportFormat, string> = {
+  csv: "text/csv;charset=utf-8",
+  json: "application/json",
+};
+
+/**
+ * Converts the loaded table to CSV or JSON using DuckDB's COPY, entirely in
+ * the browser. DuckDB writes to its in-memory filesystem, we read the bytes
+ * back out, then drop the temporary file.
+ */
+export async function exportTableAs(
+  format: ExportFormat,
+  sql: string = "SELECT * FROM data"
+): Promise<Blob> {
+  const connection = await getConnection();
+  const database = await initDuckDB();
+  const tmpName = `parquetly-export.${format}`;
+
+  const options =
+    format === "csv" ? "(FORMAT CSV, HEADER)" : "(FORMAT JSON, ARRAY true)";
+
+  try {
+    await connection.query(`COPY (${sql}) TO '${tmpName}' ${options}`);
+    const buffer = await database.copyFileToBuffer(tmpName);
+    // Copy into a fresh array: the buffer is backed by WASM memory, which can
+    // be reused or detached once the file is dropped.
+    return new Blob([new Uint8Array(buffer)], { type: EXPORT_MIME[format] });
+  } finally {
+    await database.dropFile(tmpName).catch(() => {});
+  }
+}

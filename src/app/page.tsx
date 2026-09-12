@@ -180,6 +180,38 @@ export default function Home() {
           </section>
 
           <section>
+            <h2 className="text-2xl font-semibold mb-4">Convert Parquet files</h2>
+            <p className="text-muted-foreground">
+              Parquetly can also convert a Parquet file to another format, in
+              the same way: locally, with nothing uploaded.
+            </p>
+            <ul className="mt-4 space-y-2">
+              <li>
+                <a
+                  href="/parquet-to-csv"
+                  className="text-primary underline underline-offset-4"
+                >
+                  Convert Parquet to CSV
+                </a>{" "}
+                <span className="text-muted-foreground">
+                  &ndash; for spreadsheets and tools that cannot read Parquet.
+                </span>
+              </li>
+              <li>
+                <a
+                  href="/parquet-to-json"
+                  className="text-primary underline underline-offset-4"
+                >
+                  Convert Parquet to JSON
+                </a>{" "}
+                <span className="text-muted-foreground">
+                  &ndash; keeps nested structs and lists intact.
+                </span>
+              </li>
+            </ul>
+          </section>
+
+          <section>
             <h2 className="text-2xl font-semibold mb-4">
               Frequently asked questions
             </h2>

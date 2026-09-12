@@ -10,6 +10,7 @@ import DataTable from "./DataTable";
 import SchemaSummary from "./SchemaSummary";
 import RowGroupsTable from "./RowGroupsTable";
 import QueryTab from "./QueryTab";
+import ExportButtons from "./ExportButtons";
 import { readParquetFile, type ParquetFileData } from "@/lib/parquetReader";
 import { loadArrowTable } from "@/lib/duckdb";
 import { useToast } from "@/hooks/use-toast";
@@ -82,14 +83,17 @@ export default function ParquetViewer() {
 
       {fileData && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap justify-between items-center gap-3">
             <h2 className="text-xl font-semibold">{fileData.fileName}</h2>
-            <button
-              onClick={() => setFileData(null)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Load different file
-            </button>
+            <div className="flex items-center gap-4">
+              <ExportButtons fileName={fileData.fileName} />
+              <button
+                onClick={() => setFileData(null)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Load different file
+              </button>
+            </div>
           </div>
 
           <SchemaSummary
