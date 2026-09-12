@@ -27,6 +27,15 @@ export const metadata: Metadata = {
     title: "Free Online Parquet Viewer - No Upload, Runs in Your Browser",
     description: DESCRIPTION,
   },
+  // Set these in Vercel once the properties are verified; no code change needed.
+  // GOOGLE_SITE_VERIFICATION comes from Search Console's "HTML tag" method,
+  // BING_SITE_VERIFICATION from Bing Webmaster Tools' "Meta tag" method.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      : {},
+  },
   robots: {
     index: true,
     follow: true,
