@@ -44,11 +44,11 @@ export default function Home() {
       <div className="container py-6 max-w-7xl">
         <SiteHeader />
 
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-4">
           Free Online Parquet Viewer &ndash; No Upload, Runs in Your Browser
         </h1>
 
-        <p className="text-lg text-muted-foreground max-w-3xl mb-8">
+        <p className="text-muted-foreground max-w-3xl mb-8">
           Parquetly is a free online Parquet file viewer that runs entirely in
           your browser &mdash; your file is never uploaded to a server. Open a{" "}
           <code className="font-mono text-foreground">.parquet</code> file,
@@ -60,7 +60,7 @@ export default function Home() {
 
         <div className="mt-16 space-y-14 max-w-3xl">
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               How to open a Parquet file
             </h2>
             <ol className="space-y-3 list-decimal list-inside text-muted-foreground">
@@ -87,7 +87,7 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               Why your file never leaves your machine
             </h2>
             <p className="text-muted-foreground">
@@ -114,7 +114,7 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               What Parquetly shows you
             </h2>
             <dl className="space-y-5">
@@ -128,7 +128,7 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               How Parquetly compares
             </h2>
             <div className="overflow-x-auto rounded-md border">
@@ -180,7 +180,7 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Convert Parquet files</h2>
+            <h2 className="text-lg font-semibold mb-4">Convert Parquet files</h2>
             <p className="text-muted-foreground">
               Parquetly can also convert a Parquet file to another format, in
               the same way: locally, with nothing uploaded.
@@ -212,7 +212,7 @@ export default function Home() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               Frequently asked questions
             </h2>
             <div className="space-y-6">

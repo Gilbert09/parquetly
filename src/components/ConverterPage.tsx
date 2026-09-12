@@ -61,17 +61,17 @@ export default function ConverterPage({
       <div className="container py-6 max-w-7xl">
         <SiteHeader />
 
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-4">
           {heading}
         </h1>
 
-        <p className="text-lg text-muted-foreground max-w-3xl mb-8">{intro}</p>
+        <p className="text-muted-foreground max-w-3xl mb-8">{intro}</p>
 
         <ParquetTool />
 
         <div className="mt-16 space-y-14 max-w-3xl">
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               How to convert Parquet to {format}
             </h2>
             <ol className="space-y-3 list-decimal list-inside text-muted-foreground">
@@ -91,14 +91,14 @@ export default function ConverterPage({
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               Why convert Parquet to {format}?
             </h2>
             <p className="text-muted-foreground">{rationale}</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               The conversion happens on your computer
             </h2>
             <p className="text-muted-foreground">
@@ -112,7 +112,7 @@ export default function ConverterPage({
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4">
               Frequently asked questions
             </h2>
             <div className="space-y-6">
