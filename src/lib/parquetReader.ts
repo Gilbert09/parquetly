@@ -1,13 +1,41 @@
 import * as arrow from "apache-arrow";
-// import wasmInit, { readParquet } from "parquet-wasm";
 
-let parquet;
+// Must match EXPECTED in scripts/copy-parquet-wasm.mjs, which copies these
+// files out of node_modules and into public/ at build time.
+const PARQUET_WASM_VERSION = "0.7.1";
+const GLUE_URL = `/wasm/parquet-wasm/${PARQUET_WASM_VERSION}/parquet_wasm.js`;
+const WASM_URL = `/wasm/parquet-wasm/${PARQUET_WASM_VERSION}/parquet_wasm_bg.wasm`;
 
-export async function initParquet() {
-  parquet = await import(
-    "https://cdn.jsdelivr.net/npm/parquet-wasm@0.7.1/esm/+esm"
-  );
-  await parquet.default();
+type ParquetWasm = typeof import("parquet-wasm/esm/parquet_wasm.js");
+
+let initPromise: Promise<ParquetWasm> | null = null;
+
+/**
+ * Loads the parquet-wasm module from our own origin.
+ *
+ * Memoized, so it is safe to call from anywhere any number of times. Callers
+ * must await it rather than relying on it having been kicked off at boot.
+ *
+ * The magic comments keep webpack and Turbopack from trying to resolve the
+ * path at build time - the glue and .wasm are served as static assets, not
+ * bundled. Vite treats this as a public-dir path and ignores the comments.
+ */
+export function initParquet(): Promise<ParquetWasm> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const mod = await import(
+        /* webpackIgnore: true */ /* turbopackIgnore: true */
+        /* @vite-ignore */ GLUE_URL
+      );
+      await mod.default(WASM_URL);
+      return mod as ParquetWasm;
+    })().catch((err) => {
+      // Let a transient network failure be retried.
+      initPromise = null;
+      throw err;
+    });
+  }
+  return initPromise;
 }
 
 export interface ParquetColumn {
@@ -18,8 +46,9 @@ export interface ParquetColumn {
 
 export interface ColumnChunkStats {
   columnPath: string;
-  compression: string;
-  encodings: string[];
+  // parquet-wasm returns these as enum values, not strings.
+  compression: number | string;
+  encodings: (number | string)[];
   numValues: number;
   compressedSize: number;
   uncompressedSize: number;
@@ -54,7 +83,7 @@ function formatBytes(bytes: number): string {
 
 export async function readParquetFile(file: File): Promise<ParquetFileData> {
   try {
-    // await wasmInit();
+    const parquet = await initParquet();
     const buffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(buffer);
 
@@ -75,7 +104,8 @@ export async function readParquetFile(file: File): Promise<ParquetFileData> {
       for (let j = 0; j < numColumns; j++) {
         const columnChunk = rowGroup.column(j);
         columns.push({
-          columnPath: columnChunk.columnPath(),
+          // columnPath() is the path segments of a (possibly nested) column.
+          columnPath: columnChunk.columnPath().join("."),
           compression: columnChunk.compression(),
           encodings: columnChunk.encodings(),
           numValues: columnChunk.numValues(),

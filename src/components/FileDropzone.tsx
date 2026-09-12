@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { FileJson, Download, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePostHog } from "posthog-js/react";
+import { initParquet } from "@/lib/parquetReader";
 
 interface FileDropzoneProps {
   onFileSelect: (file: File) => void;
@@ -12,6 +13,13 @@ interface FileDropzoneProps {
 
 const SAMPLE_FILE_URL =
   "https://huggingface.co/datasets/dim/law_stackexchange/resolve/main/data/train-00000-of-00001-594b426ddc4a1564.parquet";
+
+// Start downloading the 6 MB WASM module as soon as the user shows intent, so
+// it overlaps with them picking a file. Failures are ignored here - the real
+// error surfaces when the file is actually read.
+function warmParquetWasm() {
+  void initParquet().catch(() => {});
+}
 
 export default function FileDropzone({
   onFileSelect,
@@ -132,6 +140,8 @@ export default function FileDropzone({
         )}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        onPointerEnter={warmParquetWasm}
+        onDragEnter={warmParquetWasm}
       >
         <input
           type="file"
