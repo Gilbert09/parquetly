@@ -88,3 +88,33 @@ export function getCompressionName(compression: number | string): string {
   // If it's a number, look it up in the mapping
   return CompressionToString[compression] || `UNKNOWN (${compression})`;
 }
+
+// JSON.stringify throws on BigInt, and DuckDB returns Int64/UInt64 columns as
+// BigInt (including inside nested structs, lists and maps). This converts those
+// values to strings so nested cells still render.
+export function safeStringify(value: unknown): string {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  try {
+    const json = JSON.stringify(value, (_key, val) => {
+      if (typeof val === "bigint") {
+        return val.toString();
+      }
+      if (ArrayBuffer.isView(val) && !(val instanceof DataView)) {
+        return Array.from(val as unknown as ArrayLike<number | bigint>, (item) =>
+          typeof item === "bigint" ? item.toString() : item
+        );
+      }
+      return val;
+    });
+    return json ?? String(value);
+  } catch {
+    try {
+      return String(value);
+    } catch {
+      return "[unserializable]";
+    }
+  }
+}

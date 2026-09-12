@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Play, Info, WrapText } from "lucide-react";
 import { executeQueryAsJSON, type QueryResult } from "@/lib/duckdb";
+import { safeStringify } from "@/lib/utils";
 import { usePostHog } from "posthog-js/react";
 
 // Extend TanStack Table's ColumnMeta type
@@ -123,7 +124,7 @@ export default function QueryTab() {
       if (value === null || value === undefined) {
         contentLength = 4; // "null"
       } else if (typeof value === "object") {
-        contentLength = Math.min(JSON.stringify(value).length, 100);
+        contentLength = Math.min(safeStringify(value).length, 100);
       } else {
         contentLength = Math.min(String(value).length, 100);
       }
@@ -153,7 +154,7 @@ export default function QueryTab() {
           return <span className="text-muted-foreground italic">null</span>;
         }
         if (typeof value === "object") {
-          const jsonStr = JSON.stringify(value);
+          const jsonStr = safeStringify(value);
           return (
             <span
               className={wrapText ? "break-words whitespace-normal" : "truncate block"}

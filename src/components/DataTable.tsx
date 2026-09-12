@@ -15,7 +15,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { type ParquetColumn } from "@/lib/parquetReader";
-import { getParquetTypeName } from "@/lib/utils";
+import { getParquetTypeName, safeStringify } from "@/lib/utils";
 import { usePostHog } from "posthog-js/react";
 
 interface DataTableProps {
@@ -55,14 +55,8 @@ export default function DataTable({
     if (value === null || value === undefined) {
       return "null";
     }
-    if (typeof value === "object") {
-      try {
-        return JSON.stringify(value);
-      } catch (e) {
-        if ("toString" in value) {
-          return value.toString();
-        }
-      }
+    if (typeof value === "object" || typeof value === "bigint") {
+      return safeStringify(value);
     }
     return String(value);
   };
