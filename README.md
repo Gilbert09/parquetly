@@ -1,6 +1,6 @@
 # Parquetly
 
-A fast, privacy-focused Parquet file viewer that runs entirely in your browser. Explore schemas, query data with SQL, and navigate large datasets without uploading files to any server.
+A free online Parquet file viewer that runs entirely in your browser. Your file is never uploaded to a server. Open a `.parquet` file, inspect its schema and row groups, run SQL on it with DuckDB, and convert it to CSV or JSON - with no signup and no install.
 
 ## ✨ Features
 
@@ -9,6 +9,7 @@ A fast, privacy-focused Parquet file viewer that runs entirely in your browser. 
 - **📊 Data Preview**: Browse through your data with pagination
 - **🗂️ Row Group Analysis**: Inspect Parquet row group metadata and statistics
 - **💾 SQL Querying**: Run SQL queries against your data using DuckDB-WASM
+- **🔄 Convert**: Export to [CSV](https://www.parquetly.com/parquet-to-csv) or [JSON](https://www.parquetly.com/parquet-to-json), converted locally
 - **⚡ Fast & Lightweight**: Built with modern web technologies for optimal performance
 - **🎨 Clean UI**: Intuitive interface built with shadcn/ui components
 
@@ -34,7 +35,7 @@ npm run dev
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React + TypeScript + Vite
+- **Frontend**: Next.js (App Router) + React + TypeScript
 - **UI Components**: shadcn/ui + Tailwind CSS
 - **Parquet Reading**: [parquet-wasm](https://github.com/kylebarron/parquet-wasm)
 - **SQL Engine**: [DuckDB-WASM](https://github.com/duckdb/duckdb-wasm)
@@ -42,12 +43,13 @@ npm run dev
 
 ## 📖 Usage
 
-1. **Upload a File**: Drag and drop a `.parquet` file or click to browse
+1. **Open a File**: Drag and drop a `.parquet` file or click to browse. Nothing is uploaded - the file is read locally.
 2. **Explore the Data**:
    - **Data Tab**: Browse rows with pagination
    - **Schema Tab**: View column definitions and types
    - **Row Groups Tab**: Inspect Parquet file metadata
    - **Query Tab**: Write SQL queries to analyze your data
+3. **Convert**: Press CSV or JSON next to the file name to download it in that format
 
 ### SQL Querying
 
@@ -111,7 +113,10 @@ Parquetly is designed with privacy in mind:
 npm run build
 ```
 
-The built files will be in the `dist` directory, ready to deploy to any static hosting service.
+The build first copies the `parquet-wasm` files into `public/wasm/` so they are
+served from this origin rather than a CDN, then runs `next build`. Every page is
+prerendered to static HTML, which is what makes the content readable by crawlers
+that do not execute JavaScript.
 
 ## 🤝 Contributing
 

@@ -1,0 +1,35 @@
+# Parquetly
+
+> A free online Apache Parquet file viewer that runs entirely in the browser.
+> Files are never uploaded to a server.
+
+Parquetly reads `.parquet` files locally using parquet-wasm and DuckDB compiled
+to WebAssembly. There is no backend that could receive a file, no account, and
+no install. It is open source.
+
+## What it does
+
+- Shows the schema: column names, Parquet types, nullability, and the full
+  dotted path for nested columns.
+- Shows row group and column chunk statistics: row counts, compressed and
+  uncompressed sizes, compression codec, and encodings.
+- Previews the data in a paginated table, rendering nested structs and lists as
+  readable JSON.
+- Runs SQL against the file with DuckDB. The data is exposed as a table named
+  `data`.
+- Converts a Parquet file to CSV or JSON, again locally.
+
+## Pages
+
+- [Parquet viewer](https://www.parquetly.com/): the main tool, plus how to open
+  a Parquet file, why files stay local, and an FAQ.
+- [Parquet to CSV](https://www.parquetly.com/parquet-to-csv): convert to CSV for
+  spreadsheets and tools that cannot read Parquet.
+- [Parquet to JSON](https://www.parquetly.com/parquet-to-json): convert to JSON,
+  preserving nested structs and lists.
+- [Source code](https://github.com/Gilbert09/parquetly)
+
+## Notes
+
+- Requires a browser with WebAssembly support.
+- File size is limited by available browser memory, not by any upload cap.
