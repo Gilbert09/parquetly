@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useMemo } from "react";
 import {
   useReactTable,
@@ -17,7 +18,7 @@ import { usePostHog } from "posthog-js/react";
 
 // Extend TanStack Table's ColumnMeta type
 declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData extends unknown, TValue> {
+  interface ColumnMeta<TData, TValue> {
     type?: string;
   }
 }
@@ -109,7 +110,7 @@ export default function QueryTab() {
   };
 
   // Helper function to estimate content width
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const estimateColumnWidth = (columnName: string, columnType: string, rows: Record<string, any>[]) => {
     // Start with header width including type (rough estimate: 8px per character + padding)
     // Add space for type annotation like "(Int32)"

@@ -67,7 +67,7 @@ export async function loadArrowTable(arrowTable: arrow.Table): Promise<void> {
   }
 
   // Insert the Arrow table with a standard name 'data'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   await connection.insertArrowTable(arrowTable as any, { name: "data" });
 
   // Finalize insertion by sending an end-of-stream signal
@@ -75,7 +75,7 @@ export async function loadArrowTable(arrowTable: arrow.Table): Promise<void> {
   await connection.insertArrowTable(EOS as any, { name: "data" });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function executeQuery(sql: string): Promise<any> {
   const connection = await getConnection();
   const result = await connection.query(sql);
@@ -94,7 +94,7 @@ export interface QueryResult {
 }
 
 // Helper to get a readable type name from Arrow type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function getArrowTypeName(field: any): string {
   const type = field.type;
 
@@ -166,13 +166,13 @@ function getArrowTypeName(field: any): string {
 export async function executeQueryAsJSON(sql: string): Promise<QueryResult> {
   const arrowResult = await executeQuery(sql);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const columns: ColumnInfo[] = arrowResult.schema.fields.map((field: any) => ({
     name: field.name,
     type: getArrowTypeName(field),
   }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const rows = arrowResult.toArray().map((row: any) => row.toJSON());
 
   return {

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { type RowGroupInfo } from "@/lib/parquetReader";
 import { ChevronDown, ChevronRight } from "lucide-react";
