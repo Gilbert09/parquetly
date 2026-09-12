@@ -98,6 +98,46 @@ GROUP BY month;
 
 Press `Cmd/Ctrl + Enter` to execute queries.
 
+## ❓ FAQ
+
+### How do I open a .parquet file without Python?
+
+Open [parquetly.com](https://www.parquetly.com/) and drag your `.parquet` file
+onto the page. The data appears in a table within seconds. You do not need
+Python, pandas, PySpark, or any install — a browser is enough.
+
+### Does Parquetly upload my Parquet file?
+
+No. Parquetly reads your file locally using WebAssembly. The file never leaves
+your computer, and there is no server that could receive it. Open your browser's
+network tab while loading a file and you will see no upload.
+
+### Can I run SQL on a Parquet file in my browser?
+
+Yes. The file is loaded into DuckDB compiled to WebAssembly and exposed as a
+table named `data`, so you can write standard SQL against it without setting up
+a database.
+
+### Is it safe for confidential data?
+
+The file is processed entirely in your browser, so confidential data is not
+transmitted anywhere. The page loads its WebAssembly engine over the network,
+but your file itself is only ever read locally — and the source is open, so you
+can verify that rather than trust it.
+
+### How large a file can it open?
+
+There is no upload cap, because there is no upload. The practical limit is your
+browser's available memory. Files in the tens or low hundreds of megabytes open
+comfortably.
+
+### What is a Parquet file?
+
+Apache Parquet is a columnar storage format for analytics data. It stores values
+column by column rather than row by row, which makes it far smaller and faster to
+query than CSV. It is binary, which is why a text editor shows only unreadable
+bytes and a dedicated viewer is needed.
+
 ## 🔐 Privacy & Security
 
 Parquetly is designed with privacy in mind:
