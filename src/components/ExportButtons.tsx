@@ -6,6 +6,7 @@ import { Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { exportTableAs, type ExportFormat } from "@/lib/duckdb";
 import { usePostHog } from "posthog-js/react";
+import { errorCategory } from "@/lib/analytics";
 
 interface ExportButtonsProps {
   /** Source file name, used to name the download. */
@@ -52,7 +53,7 @@ export default function ExportButtons({ fileName }: ExportButtonsProps) {
         format,
         duration_ms: Date.now() - startedAt,
         success: false,
-        error_message: err instanceof Error ? err.message : "Unknown error",
+        error_category: errorCategory(err),
       });
     } finally {
       setBusy(null);

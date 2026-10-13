@@ -125,6 +125,12 @@ transmitted anywhere. The page loads its WebAssembly engine over the network,
 but your file itself is only ever read locally — and the source is open, so you
 can verify that rather than trust it.
 
+The hosted site uses PostHog for anonymous usage analytics, such as which tab
+you open and how large a file is. These events never contain file contents,
+column names, query text or error messages. Session recording, autocapture and
+exception capture are off in the code, so a dashboard setting cannot turn them
+on.
+
 ### How large a file can it open?
 
 There is no upload cap, because there is no upload. The practical limit is your
@@ -144,7 +150,10 @@ Parquetly is designed with privacy in mind:
 
 - ✅ Zero server uploads - all processing is client-side
 - ✅ No data storage - files are only held in browser memory
-- ✅ No tracking of file contents
+- ✅ No tracking of file contents - analytics events hold only counts, sizes,
+  timings and error categories, and session recording is off
+- ✅ Enforced by the browser - a Content Security Policy blocks network requests
+  to every host except jsDelivr, Hugging Face (the sample file) and PostHog
 - ✅ Open source - audit the code yourself
 
 ## 📦 Building for Production

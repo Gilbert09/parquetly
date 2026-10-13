@@ -39,7 +39,7 @@ export const FAQS: Faq[] = [
   {
     question: "Is it safe to use with confidential data?",
     answer:
-      "Parquetly processes files entirely in your browser, so confidential data is not transmitted anywhere. The page does load its WebAssembly engine and this site's own assets over the network, but your file itself is only ever read locally.",
+      "Parquetly processes files entirely in your browser, so confidential data is not transmitted anywhere. The page does load its WebAssembly engine and this site's own assets over the network, but your file itself is only ever read locally. Parquetly uses PostHog for anonymous usage analytics, such as which tab you open and how large a file is. Those events never contain file contents, column names, query text or error messages, and session recording is off.",
   },
   {
     question: "How large a Parquet file can it open?",

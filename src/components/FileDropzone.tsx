@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { FileJson, Download, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePostHog } from "posthog-js/react";
+import { errorCategory } from "@/lib/analytics";
 import { initParquet } from "@/lib/parquetReader";
 
 interface FileDropzoneProps {
@@ -83,7 +84,7 @@ export default function FileDropzone({
     } catch (error) {
       console.error("Failed to load sample file:", error);
       posthog?.capture("sample_file_load_failed", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
+        error_category: errorCategory(error),
       });
       toast({
         variant: "destructive",

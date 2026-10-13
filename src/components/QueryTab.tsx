@@ -15,6 +15,7 @@ import { Loader2, Play, Info, WrapText } from "lucide-react";
 import { executeQueryAsJSON, type QueryResult } from "@/lib/duckdb";
 import { safeStringify } from "@/lib/utils";
 import { usePostHog } from "posthog-js/react";
+import { errorCategory, queryType } from "@/lib/analytics";
 
 // Extend TanStack Table's ColumnMeta type
 declare module "@tanstack/react-table" {
@@ -74,7 +75,7 @@ export default function QueryTab() {
       // Track successful query execution
       posthog?.capture('query_executed', {
         query_length: query.length,
-        query_type: query.trim().split(/\s+/)[0].toUpperCase(), // SELECT, UPDATE, etc.
+        query_type: queryType(query),
         row_count: queryResult.rowCount,
         column_count: queryResult.columns.length,
         execution_time_ms: executionTime,
@@ -91,10 +92,10 @@ export default function QueryTab() {
       // Track failed query execution
       posthog?.capture('query_executed', {
         query_length: query.length,
-        query_type: query.trim().split(/\s+/)[0].toUpperCase(),
+        query_type: queryType(query),
         execution_time_ms: executionTime,
         success: false,
-        error_message: err instanceof Error ? err.message : "Unknown error",
+        error_category: errorCategory(err),
       });
     } finally {
       setIsExecuting(false);

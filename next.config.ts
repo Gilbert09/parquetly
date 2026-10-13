@@ -10,6 +10,24 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Lets the browser enforce that the page talks only to the hosts it
+        // needs: the DuckDB bundle on jsDelivr, the Hugging Face sample file,
+        // and PostHog. fetch, XHR, beacons and WebSockets to any other host
+        // are blocked, so a file cannot be sent anywhere else.
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "connect-src 'self' blob: data:",
+              "https://cdn.jsdelivr.net",
+              "https://huggingface.co https://*.hf.co",
+              "https://*.posthog.com",
+            ].join(" "),
+          },
+        ],
+      },
+      {
         // Version-scoped and content-immutable: 6 MB should be fetched once.
         source: "/wasm/:path*",
         headers: [
