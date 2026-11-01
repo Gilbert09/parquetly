@@ -45,7 +45,7 @@ export default function Home() {
         <SiteHeader />
 
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-4">
-          Free Online Parquet Viewer &ndash; No Upload, Runs in Your Browser
+          Free Online Parquet Viewer
         </h1>
 
         <p className="text-muted-foreground max-w-3xl mb-8">
